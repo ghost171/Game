@@ -80,7 +80,7 @@ void Player::Draw(Image &screen)
   {
     for(int x = coords.x; x <= coords.x + 32; ++x)
     {
-      Pixel current_pixel = image.GetPixel((x - coords.x), 32 - (y - coords.y));
+      Pixel current_pixel = image.GetPixel((x - coords.x), (y - coords.y));
       if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
         current_pixel.a = 255;
       }

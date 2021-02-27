@@ -3,6 +3,7 @@
 #include "Player.h"
 #include <iostream>
 #include <fstream>
+#include <unistd.h>  
 
 using namespace std;
 
@@ -21,6 +22,7 @@ struct InputState
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
+unsigned int microsecond = 100000;
 
 
 void OnKeyboardPressed(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -46,52 +48,98 @@ void OnKeyboardPressed(GLFWwindow* window, int key, int scancode, int action, in
 }
 
 void moving(Player &player, Image &screenBuffer, GLFWwindow *window, Image &imageForMoving) {
+
   for(int y = player.coords.y; y <= player.coords.y + 32; ++y)
   {
     for(int x = player.coords.x; x <= player.coords.x + 32; ++x)
     {
-      screenBuffer.PutPixel(x, y, imageForMoving.GetPixel((x - player.coords.x), 32 - (y - player.coords.y)));
+      screenBuffer.PutPixel(x, y, imageForMoving.GetPixel((x - player.coords.x), (y - player.coords.y)));
     }
   }
+  //usleep(microsecond);
   glfwPollEvents();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
   glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
   glfwSwapBuffers(window);
 }
 
-void processPlayerMovement(Player &player, Image &screenBuffer, GLFWwindow* window)
+void processPlayerMovement(Player &player, Image &screenBuffer, GLFWwindow* window, char labirint[20][80])
 {
   if (Input.keys[GLFW_KEY_W]) {
-    player.ProcessInput(MovementDir::UP);
-    moving(player, screenBuffer, window, player.imageForMoving1);
-    moving(player, screenBuffer, window, player.imageForMoving2);
-    moving(player, screenBuffer, window, player.imageForMoving3);
-    moving(player, screenBuffer, window, player.imageForMoving2);
-    moving(player, screenBuffer, window, player.imageForMoving1);
+    for (int i = 0; i < 20; i++) {
+      for (int j = 0; j < 80; j++) {
+        if (labirint[i][j] == '@') {
+          if (i != 0 && labirint[i - 1][j] != '#') {
+            labirint[i - 1][j] = '@';
+            labirint[i][j] = '.';
+            moving(player, screenBuffer, window, player.imageForMoving1);
+            moving(player, screenBuffer, window, player.imageForMoving2);
+            moving(player, screenBuffer, window, player.imageForMoving3);
+            moving(player, screenBuffer, window, player.imageForMoving2);
+            moving(player, screenBuffer, window, player.imageForMoving1);
+            player.ProcessInput(MovementDir::DOWN);
+          }
+          return;
+        }
+      }
+    } 
   }
   else if (Input.keys[GLFW_KEY_S]) {
-    player.ProcessInput(MovementDir::DOWN);
-    moving(player, screenBuffer, window, player.imageForMoving1);
-    moving(player, screenBuffer, window, player.imageForMoving2);
-    moving(player, screenBuffer, window, player.imageForMoving3);
-    moving(player, screenBuffer, window, player.imageForMoving2);
-    moving(player, screenBuffer, window, player.imageForMoving1);
+    for (int i = 0; i < 20; i++) {
+      for (int j = 0; j < 80; j++) {
+        if (labirint[i][j] == '@') {
+          if (i != 19 && labirint[i + 1][j] != '#') {
+            labirint[i + 1][j] = '@';
+            labirint[i][j] = '.';
+            moving(player, screenBuffer, window, player.imageForMoving1);
+            moving(player, screenBuffer, window, player.imageForMoving2);
+            moving(player, screenBuffer, window, player.imageForMoving3);
+            moving(player, screenBuffer, window, player.imageForMoving2);
+            moving(player, screenBuffer, window, player.imageForMoving1);
+            player.ProcessInput(MovementDir::UP);
+          }
+          return;
+        }
+      }
+    }
   }
   if (Input.keys[GLFW_KEY_A]) {
-    player.ProcessInput(MovementDir::LEFT);
-    moving(player, screenBuffer, window, player.imageForMoving1);
-    moving(player, screenBuffer, window, player.imageForMoving2);
-    moving(player, screenBuffer, window, player.imageForMoving3);
-    moving(player, screenBuffer, window, player.imageForMoving2);
-    moving(player, screenBuffer, window, player.imageForMoving1);
+    for (int i = 0; i < 20; i++) {
+      for (int j = 0; j < 80; j++) {
+        if (labirint[i][j] == '@') {
+          if (j != 0 && labirint[i][j - 1] != '#') {
+            labirint[i][j - 1] = '@';
+            labirint[i][j] = '.';
+            moving(player, screenBuffer, window, player.imageForMoving1);
+            moving(player, screenBuffer, window, player.imageForMoving2);
+            moving(player, screenBuffer, window, player.imageForMoving3);
+            moving(player, screenBuffer, window, player.imageForMoving2);
+            moving(player, screenBuffer, window, player.imageForMoving1);
+            player.ProcessInput(MovementDir::LEFT);
+          }
+          return;
+        }
+      }
+    }
   }
   else if (Input.keys[GLFW_KEY_D]) {
-    player.ProcessInput(MovementDir::RIGHT);
-    moving(player, screenBuffer, window, player.imageForMoving1);
-    moving(player, screenBuffer, window, player.imageForMoving2);
-    moving(player, screenBuffer, window, player.imageForMoving3);
-    moving(player, screenBuffer, window, player.imageForMoving2);
-    moving(player, screenBuffer, window, player.imageForMoving1);
+    for (int i = 0; i < 20; i++) {
+      for (int j = 0; j < 80; j++) {
+        if (labirint[i][j] == '@') {
+          if (j != 79 && labirint[i][j + 1] != '#') {
+            labirint[i][j + 1] = '@';
+            labirint[i][j] = '.';
+            moving(player, screenBuffer, window, player.imageForMoving1);
+            moving(player, screenBuffer, window, player.imageForMoving2);
+            moving(player, screenBuffer, window, player.imageForMoving3);
+            moving(player, screenBuffer, window, player.imageForMoving2);
+            moving(player, screenBuffer, window, player.imageForMoving1);
+            player.ProcessInput(MovementDir::RIGHT);
+          }
+          return;
+        }
+      }
+    }
   }
 }
 
@@ -163,21 +211,20 @@ int main(int argc, char** argv)
 
   ifstream MyFile("Labirint.txt");
   int i = 0;
-  char labirint[40][40];
+  char labirint[20][80];
   while(!MyFile.eof()) {
     MyFile >> text[i];
     i++;
   }
 
-  for (int i = 0; i < 40; i++) {
-    for (int j = 0; j < 40; j++) {
-      labirint[i][j] = text[i * 40 + j]; 
+  for (int i = 0; i < 20; i++) {
+    for (int j = 0; j < 80; j++) {
+      labirint[i][j] = text[i * 80 + j]; 
     }
   }
-
-  for (int i = 0; i < 40; i++) {
-    for (int j = 0; j < 40; j++) {
-      cout << labirint[i][j];
+  for (int i = 0; i < 20; i++) {
+    for (int j = 0; j < 80; j++) {
+      cout << labirint[i][j]; 
     }
     cout << endl;
   }
@@ -218,6 +265,28 @@ int main(int argc, char** argv)
   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);  GL_CHECK_ERRORS;
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f); GL_CHECK_ERRORS;
 
+  for (int i = 0; i < 20; i++) {
+    for (int j = 0; j < 80; j++) {
+      if (labirint[i][j] == '@') {
+        player.coords.x = j * 32;
+        player.coords.y = i * 32;
+        player.old_coords.x = j * 32;
+        player.old_coords.y = i * 32;
+        for(int y = 0; y <= 32; ++y)
+        {
+            for(int x = 0; x <= 32; ++x)
+            {
+              Pixel current_pixel = floor.GetPixel(x, 32 - y);
+              if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
+                current_pixel.a = 255;
+              }
+              screenBuffer.PutPixel(j * 32 + x, i * 32 + y, current_pixel);
+            }
+        }
+      }
+    }
+  }
+
   //game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -225,8 +294,8 @@ int main(int argc, char** argv)
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
     int step = 4;
-    for (int i = 0; i < 30; i++) {
-        for (int j = 0; j < 30; j++) {
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 80; j++) {
           if (labirint[i][j] == '#') {
               for(int y = 0; y <= 32; ++y)
               {
@@ -236,7 +305,7 @@ int main(int argc, char** argv)
                     if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
                       current_pixel.a = 255;
                     }
-                    screenBuffer.PutPixel(i * x, j * y, current_pixel);
+                    screenBuffer.PutPixel(j * 32 + x, i * 32 + y, current_pixel);
                   }
               }
               continue;
@@ -250,19 +319,28 @@ int main(int argc, char** argv)
                   if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
                     current_pixel.a = 255;
                   }
-                  screenBuffer.PutPixel(i * x, j * y, current_pixel);
+                  screenBuffer.PutPixel(j * 32 + x, i * 32 + y, current_pixel);
                 }
             }
             continue;
           }
       }
     }
-    processPlayerMovement(player, screenBuffer, window);
+    processPlayerMovement(player, screenBuffer, window, labirint);
+    cout << "LLLLLLLLLLLLL" << endl; 
+    for (int i = 0; i < 20; i++) {
+       for (int j = 0; j < 80; j++) {
+         cout << labirint[i][j];
+       }
+       cout << endl;
+    }
+    cout << "LLLLLLLLLLLLL" << endl;
     glfwPollEvents();
     player.Draw(screenBuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
+    glRasterPos2f(-1, 1);
+    glPixelZoom(1, -1);
     glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
-
 		glfwSwapBuffers(window);
 	}
 
