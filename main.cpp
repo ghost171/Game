@@ -10,6 +10,10 @@ using namespace std;
 #define GLFW_DLL
 #include <GLFW/glfw3.h>
 
+char BUFFER_TILE = '.';
+
+float threshold = 0.02;
+
 struct InputState
 {
   bool keys[1024]{}; //массив состояний кнопок - нажата/не нажата
@@ -65,13 +69,43 @@ void moving(Player &player, Image &screenBuffer, GLFWwindow *window, Image &imag
 
 void processPlayerMovement(Player &player, Image &screenBuffer, GLFWwindow* window, char labirint[20][80])
 {
-  if (Input.keys[GLFW_KEY_W]) {
+  cout << "DELTATIME" << endl;
+  cout << deltaTime << endl;
+  cout << "DELTATIME" << endl;
+  if (Input.keys[GLFW_KEY_E]) {
     for (int i = 0; i < 20; i++) {
       for (int j = 0; j < 80; j++) {
         if (labirint[i][j] == '@') {
-          if (i != 0 && labirint[i - 1][j] != '#') {
-            labirint[i - 1][j] = '@';
-            labirint[i][j] = '.';
+          if (labirint[i - 1][j] == 'D') {
+            labirint[i - 1][j] = 'O';
+            return;
+          }
+          if (labirint[i + 1][j] == 'D') {
+            labirint[i + 1][j] = 'O';
+            return;
+          }
+          if (labirint[i][j + 1] == 'D') {
+            labirint[i][j + 1] = 'O';
+            return;
+          }
+          if (labirint[i][j - 1] == 'D') {
+            labirint[i][j - 1] = 'O';
+            return;
+          }
+        }
+      }
+    }
+  }
+  if (Input.keys[GLFW_KEY_W] || Input.keys[GLFW_KEY_UP]) {
+    for (int i = 0; i < 20; i++) {
+      for (int j = 0; j < 80; j++) {
+        if (labirint[i][j] == '@') {
+          if (i != 0 && labirint[i - 1][j] != '#' && labirint[i - 1][j] != 'D') {
+            if (deltaTime < threshold) {
+              labirint[i][j] = BUFFER_TILE;
+              BUFFER_TILE = labirint[i - 1][j];
+              labirint[i - 1][j] = '@';
+            }
             moving(player, screenBuffer, window, player.imageForMoving1);
             moving(player, screenBuffer, window, player.imageForMoving2);
             moving(player, screenBuffer, window, player.imageForMoving3);
@@ -84,13 +118,16 @@ void processPlayerMovement(Player &player, Image &screenBuffer, GLFWwindow* wind
       }
     } 
   }
-  else if (Input.keys[GLFW_KEY_S]) {
+  else if (Input.keys[GLFW_KEY_S] || Input.keys[GLFW_KEY_DOWN]) {
     for (int i = 0; i < 20; i++) {
       for (int j = 0; j < 80; j++) {
         if (labirint[i][j] == '@') {
-          if (i != 19 && labirint[i + 1][j] != '#') {
-            labirint[i + 1][j] = '@';
-            labirint[i][j] = '.';
+          if (i != 19 && labirint[i + 1][j] != '#' && labirint[i + 1][j] != 'D') {
+            if (deltaTime < threshold) {
+              labirint[i][j] = BUFFER_TILE;
+              BUFFER_TILE = labirint[i + 1][j];
+              labirint[i + 1][j] = '@';
+            }
             moving(player, screenBuffer, window, player.imageForMoving1);
             moving(player, screenBuffer, window, player.imageForMoving2);
             moving(player, screenBuffer, window, player.imageForMoving3);
@@ -103,13 +140,16 @@ void processPlayerMovement(Player &player, Image &screenBuffer, GLFWwindow* wind
       }
     }
   }
-  if (Input.keys[GLFW_KEY_A]) {
+  if (Input.keys[GLFW_KEY_A] || Input.keys[GLFW_KEY_LEFT]) {
     for (int i = 0; i < 20; i++) {
       for (int j = 0; j < 80; j++) {
         if (labirint[i][j] == '@') {
-          if (j != 0 && labirint[i][j - 1] != '#') {
-            labirint[i][j - 1] = '@';
-            labirint[i][j] = '.';
+          if (j != 0 && labirint[i][j - 1] != '#' && labirint[i][j - 1] != 'D') {
+            if (deltaTime < threshold) {
+              labirint[i][j] = BUFFER_TILE;
+              BUFFER_TILE = labirint[i][j - 1];
+              labirint[i][j - 1] = '@';
+            }
             moving(player, screenBuffer, window, player.imageForMoving1);
             moving(player, screenBuffer, window, player.imageForMoving2);
             moving(player, screenBuffer, window, player.imageForMoving3);
@@ -122,13 +162,16 @@ void processPlayerMovement(Player &player, Image &screenBuffer, GLFWwindow* wind
       }
     }
   }
-  else if (Input.keys[GLFW_KEY_D]) {
+  else if (Input.keys[GLFW_KEY_D] || Input.keys[GLFW_KEY_RIGHT]) {
     for (int i = 0; i < 20; i++) {
       for (int j = 0; j < 80; j++) {
         if (labirint[i][j] == '@') {
-          if (j != 79 && labirint[i][j + 1] != '#') {
-            labirint[i][j + 1] = '@';
-            labirint[i][j] = '.';
+          if (j != 79 && labirint[i][j + 1] != '#' && labirint[i][j + 1] != 'D') {
+            if (deltaTime < threshold) {
+              labirint[i][j] = BUFFER_TILE;
+              BUFFER_TILE = labirint[i][j + 1];
+              labirint[i][j + 1] = '@';
+            }
             moving(player, screenBuffer, window, player.imageForMoving1);
             moving(player, screenBuffer, window, player.imageForMoving2);
             moving(player, screenBuffer, window, player.imageForMoving3);
@@ -262,6 +305,8 @@ int main(int argc, char** argv)
 	Image screenBuffer(WINDOW_WIDTH, WINDOW_HEIGHT, 4);
   Image wall("./resources/wall.png");
   Image floor("./resources/floor.png");
+  Image doorOpen("./resources/open_door.png");
+  Image doorClose("./resources/close_door.png");
   glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);  GL_CHECK_ERRORS;
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f); GL_CHECK_ERRORS;
 
@@ -301,7 +346,7 @@ int main(int argc, char** argv)
               {
                   for(int x = 0; x <= 32; ++x)
                   {
-                    Pixel current_pixel = wall.GetPixel(x, 32 - y);
+                    Pixel current_pixel = wall.GetPixel(x, y);
                     if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
                       current_pixel.a = 255;
                     }
@@ -315,7 +360,7 @@ int main(int argc, char** argv)
             {
                 for(int x = 0; x <= 32; ++x)
                 {
-                  Pixel current_pixel = floor.GetPixel(x, 32 - y);
+                  Pixel current_pixel = floor.GetPixel(x, y);
                   if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
                     current_pixel.a = 255;
                   }
@@ -324,9 +369,37 @@ int main(int argc, char** argv)
             }
             continue;
           }
+          if (labirint[i][j] == 'D') {
+            for(int y = 0; y <= 32; ++y)
+            {
+              for(int x = 0; x <= 32; ++x)
+              {
+                Pixel current_pixel = doorClose.GetPixel(x, y);
+                if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
+                  current_pixel.a = 255;
+                }
+                screenBuffer.PutPixel(j * 32 + x, i * 32 + y, current_pixel);
+              }
+            }
+          
+          }
+          if (labirint[i][j] == 'O') {
+            for(int y = 0; y <= 32; ++y)
+            {
+              for(int x = 0; x <= 32; ++x)
+              {
+                Pixel current_pixel = doorOpen.GetPixel(x, y);
+                if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
+                  current_pixel.a = 255;
+                }
+                screenBuffer.PutPixel(j * 32 + x, i * 32 + y, current_pixel);
+              }
+            }
+          
+          }
       }
     }
-    processPlayerMovement(player, screenBuffer, window, labirint);
+    processPlayerMovement(player, screenBuffer, window, labirint); 
     cout << "LLLLLLLLLLLLL" << endl; 
     for (int i = 0; i < 20; i++) {
        for (int j = 0; j < 80; j++) {
