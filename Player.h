@@ -32,13 +32,13 @@ struct Player
 
   bool Moved() const;
   void ProcessInput(MovementDir dir);
-  void Draw(Image &screen);
-  void DrawMoving1(Image &screen);
+  void DrawRight(Image &screen);
+  void DrawLeft(Image &screen);
 
 private:
   Image image = Image("./resources/player.png");
   Pixel color {.r = 255, .g = 255, .b = 0, .a = 255};
-  int move_speed = 10;
+  int move_speed = 1;
 
 };
 

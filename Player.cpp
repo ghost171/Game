@@ -11,7 +11,7 @@ bool Player::Moved() const
 
 void Player::ProcessInput(MovementDir dir)
 {
-  int move_dist = move_speed * 1;
+  int move_dist = move_speed * 32;
   switch(dir)
   {
     case MovementDir::UP:
@@ -35,7 +35,7 @@ void Player::ProcessInput(MovementDir dir)
   }
 }
 
-void Player::DrawMoving1(Image &screen)
+void Player::DrawRight(Image &screen)
 {
   if(Moved())
   {
@@ -44,32 +44,9 @@ void Player::DrawMoving1(Image &screen)
     {
       for(int x = old_coords.x; x <= old_coords.x + 32; ++x)
       {
-        screen.PutPixel(x, y, backgroundColor);
-      }
-    }
-    old_coords = coords;
-    
-  }
-
-  for(int y = coords.y; y <= coords.y + 32; ++y)
-  {
-    for(int x = coords.x; x <= coords.x + 32; ++x)
-    {
-      screen.PutPixel(x, y, imageForMoving1.GetPixel((x - coords.x), 32 - (y - coords.y)));
-    }
-  }
-}
-
-void Player::Draw(Image &screen)
-{
-  if(Moved())
-  {
-    
-    for(int y = old_coords.y; y <= old_coords.y + 32; ++y)
-    {
-      for(int x = old_coords.x; x <= old_coords.x + 32; ++x)
-      {
-        screen.PutPixel(x, y, backgroundColor);
+        if (backgroundColor.a > 0.1) {
+          screen.PutPixel(x, y, backgroundColor);
+        }
       }
     }
     old_coords = coords;
@@ -81,10 +58,39 @@ void Player::Draw(Image &screen)
     for(int x = coords.x; x <= coords.x + 32; ++x)
     {
       Pixel current_pixel = image.GetPixel((x - coords.x), (y - coords.y));
-      if (current_pixel.r + current_pixel.g + current_pixel.b <= 300) {
-        current_pixel.a = 255;
+      if (current_pixel.a > 0.1) {
+        screen.PutPixel(x, y, current_pixel);
       }
-      screen.PutPixel(x, y, current_pixel);
+    }
+  }
+}
+
+void Player::DrawLeft(Image &screen)
+{
+  if(Moved())
+  {
+    
+    for(int y = old_coords.y; y <= old_coords.y + 32; ++y)
+    {
+      for(int x = old_coords.x; x <= old_coords.x + 32; ++x)
+      {
+        if (backgroundColor.a > 0.1) {
+          screen.PutPixel(x, y, backgroundColor);
+        }
+      }
+    }
+    old_coords = coords;
+    
+  }
+
+  for(int y = coords.y; y <= coords.y + 32; ++y)
+  {
+    for(int x = coords.x; x <= coords.x + 32; ++x)
+    {
+      Pixel current_pixel = image.GetPixel(32 - (x - coords.x), (y - coords.y));
+      if (current_pixel.a > 0.1) {
+        screen.PutPixel(x, y, current_pixel);
+      }
     }
   }
 }
