@@ -4,9 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
-#include <unistd.h>  
-#include <SFML/Graphics.hpp>
-
+#include <unistd.h>
 using namespace std;
 
 #define GLFW_DLL
@@ -77,7 +75,7 @@ void movingLeft(Player &player, Image &screenBuffer, GLFWwindow *window, Image &
   {
     for(int x = player.coords.x; x <= player.coords.x + 32; ++x)
     {
-      if (imageForMoving.GetPixel((x - player.coords.x), (y - player.coords.y)).a > 0.1) {
+      if (imageForMoving.GetPixel(32 - (x - player.coords.x), (y - player.coords.y)).a > 0.1) {
         screenBuffer.PutPixel(x, y, imageForMoving.GetPixel(32 - (x - player.coords.x), (y - player.coords.y)));
       }
     }
@@ -260,7 +258,7 @@ void shimmering (Image &screenBuffer, GLFWwindow *window, Image &imageForShimmer
   glfwSwapBuffers(window);
 }
 
-void level2(Image &screenBuffer, GLFWwindow *window, Player player) {
+int level2(Image &screenBuffer, GLFWwindow *window, Player player) {
 
   char labirint[20][80];
   int xOfExit, yOfExit;
@@ -408,21 +406,21 @@ void level2(Image &screenBuffer, GLFWwindow *window, Player player) {
               screenBuffer.PutPixel(x, y, backgroundColor);
             }
           }
-          for (int x = 300; x < 1200; x++) {
+          for (int x = 0; x < 900; x++) {
             for (int y = 0; y < 560; y++) {
-              screenBuffer.PutPixel(x, y, victory.GetPixel(x, y));
+              screenBuffer.PutPixel(x + 300, y, victory.GetPixel(x, y));
             }
           }
           glfwPollEvents();
           //processPlayerMovement(player, screenBuffer, window, labirint);
           //player.Draw(screenBuffer);
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
-          glRasterPos2f(-1, 1);
-          glPixelZoom(1, -1);
+          //glRasterPos2f(-1, 1);
+          //glPixelZoom(1, -1);
           glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
           glfwSwapBuffers(window);
-          usleep(microsecond * 5);
-          return;
+          usleep(5000000);
+          return 1;
         }
         glfwPollEvents();
         processPlayerMovement(player, screenBuffer, window, labirint);
@@ -442,9 +440,10 @@ void level2(Image &screenBuffer, GLFWwindow *window, Player player) {
     glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
     glfwSwapBuffers(window);
   }
+  return 0;
 }
 
-void nextLevelWindow(Image &screenBuffer, GLFWwindow *window, Player player) {
+int nextLevelWindow(Image &screenBuffer, GLFWwindow *window, Player player) {
   Image nextLevelTheme("./resources/next_level_theme.png");
   while (!glfwWindowShouldClose(window))
   {
@@ -467,8 +466,11 @@ void nextLevelWindow(Image &screenBuffer, GLFWwindow *window, Player player) {
     glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
     glfwSwapBuffers(window);
     usleep(microsecond * 10);
-    level2(screenBuffer, window, player);
+    if (level2(screenBuffer, window, player) == 1) {
+      return 1;
+    }
   }
+  return 0;
 }
 
 void loadTorch(GLFWwindow *window, Image &screenBuffer, int i, int j, Player &player) {
@@ -1000,7 +1002,14 @@ void shootingRight(Image &screenBuffer, GLFWwindow *window, Player &player) {
 
 }
 
-void shootingLeft(Image &screenBuffer, GLFWwindow *window, Player &player) {
+bool Moved(int x, int oldX, int y, int oldY) {
+  if(x == oldX && y == oldY)
+    return false;
+  else
+    return true;
+}
+
+void shootingLeft(Image &screenBuffer, GLFWwindow *window, Player &player, char Labirint1[20][80]) {
   Image magic1("./resources/Magic1.png");
   Image magic2("./resources/Magic2.png");
   Image magic3("./resources/Magic3.png");
@@ -1091,10 +1100,180 @@ void shootingLeft(Image &screenBuffer, GLFWwindow *window, Player &player) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
   glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
   glfwSwapBuffers(window);
+  int xBall, yBall;
+  xBall = player.coords.x + 32;
+  yBall = player.coords.y;
+  int xOldBall = player.coords.x;
+  int yOldBall = player.coords.y;
+  do {
+    xBall -= 32;
+    /*if(Moved(xBall, xOldBall, yBall, yOldBall))
+    {
+      for(int y = yOldBall; y >= yOldBall - 32; --y)
+      {
+        for(int x = xOldBall; x >= xOldBall - 32; --x)
+        {
+          if (backgroundColor.a > 0.1) {
+            screenBuffer.PutPixel(x, y, backgroundColor);
+          }
+        }
+      }
+      xOldBall = xBall;
+      yOldBall = yOldBall;
+    }*/
+    Image image("./resources/fireball.png");
+    for(int y = yBall; y >= yBall - 32; --y)
+    {
+      for(int x = xBall; x >= xBall - 32; --x)
+      {
+        Pixel current_pixel = image.GetPixel(x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(x, y, current_pixel);
+        }
+      }
+    }
+
+    usleep(100000);
+    glfwPollEvents();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
+    glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
+    glfwSwapBuffers(window);
+  } while (Labirint1[xBall / 32][yBall / 32] != '#');
+}
+
+void loadSkeletonWait(GLFWwindow *window, Image &screenBuffer, int i, int j, Player &player) {
+  Image skeleton1("./resources/Skeleton1.png");
+  Image skeleton2("./resources/Skeleton2.png");
+  Image skeleton3("./resources/Skeleton3.png");
+  Image skeleton4("./resources/Skeleton4.png");
+  for (int y = 0; y <= 32; y++) {
+    for (int x = 0; x <= 32; x++) {
+      Pixel current_pixel = skeleton1.GetPixel(32 - x, y);
+      if (current_pixel.a > 0.1) {
+        screenBuffer.PutPixel(j * 32 + x, i * 32 + y, skeleton1.GetPixel(32 - x, y));
+      }
+    }
+  }
+  glfwPollEvents();
+  glfwSwapBuffers(window);
+  if (deltaTime > 0.027) {
+    for (int y = 0; y <= 32; y++) {
+      for (int x = 0; x <= 32; x++) {
+        Pixel current_pixel = skeleton2.GetPixel(32 - x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(j * 32 + x, i * 32 + y, skeleton2.GetPixel(32 - x, y));
+        }
+      }
+    }
+  }
+  glfwPollEvents();
+  glfwSwapBuffers(window);
+  if (deltaTime > 0.031) {
+    for (int y = 0; y <= 32; y++) {
+      for (int x = 0; x <= 32; x++) {
+        Pixel current_pixel = skeleton3.GetPixel(32 - x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(j * 32 + x, i * 32 + y, skeleton3.GetPixel(32 - x, y));
+        }
+      }
+    }
+  }
+  glfwPollEvents();
+  glfwSwapBuffers(window);
+  if (deltaTime > 0.034) {
+    for (int y = 0; y <= 32; y++) {
+      for (int x = 0; x <= 32; x++) {
+        Pixel current_pixel = skeleton4.GetPixel(32 - x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(j * 32 + x, i * 32 + y, skeleton4.GetPixel(32 - x, y));
+        }
+      }
+    }
+  }
+  glfwPollEvents();
+  glfwSwapBuffers(window);
 
 }
 
-void level1(Image &screenBuffer, GLFWwindow *window, Player player) {
+void loadSkeletonWalk(GLFWwindow *window, Image &screenBuffer, int i, int j, Player &player) {
+  int xSkel = j * 32;
+  int ySkel = i * 32;
+  Image skel1("./resources/SkeletonWalking.png");
+  Image skel2("./resources/SkeletonWalking2.png");
+  Image skel3("./resources/SkeletonWalking3.png");
+  Image skel4("./resources/SkeletonWalking4.png");
+  Image skel5("./resources/SkeletonWalking5.png");
+  for (int k = 0; k < 3; k++) {
+    for (int y = 0; y <= 32; y++) {
+      for (int x = 0; x <= 32; x++) {
+        Pixel current_pixel = skel1.GetPixel(32 - x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(xSkel + x, i * 32 + y, skel1.GetPixel(32 - x, y));
+        }
+      }
+    }
+    usleep(100000);
+    glfwPollEvents();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
+    glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
+    glfwSwapBuffers(window);
+    for (int y = 0; y <= 32; y++) {
+      for (int x = 0; x <= 32; x++) {
+        Pixel current_pixel = skel2.GetPixel(32 - x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(xSkel + x, i * 32 + y, skel2.GetPixel(32 - x, y));
+        }
+      }
+    }
+    usleep(100000);
+    glfwPollEvents();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
+    glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
+    glfwSwapBuffers(window);
+    for (int y = 0; y <= 32; y++) {
+      for (int x = 0; x <= 32; x++) {
+        Pixel current_pixel = skel3.GetPixel(32 - x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(xSkel + x, i * 32 + y, skel3.GetPixel(32 - x, y));
+        }
+      }
+    }
+    usleep(100000);
+    glfwPollEvents();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
+    glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
+    glfwSwapBuffers(window);
+    for (int y = 0; y <= 32; y++) {
+      for (int x = 0; x <= 32; x++) {
+        Pixel current_pixel = skel4.GetPixel(32 - x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(xSkel + x, i * 32 + y, skel4.GetPixel(32 - x, y));
+        }
+      }
+    }
+    usleep(100000);
+    glfwPollEvents();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
+    glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
+    glfwSwapBuffers(window);
+    for (int y = 0; y <= 32; y++) {
+      for (int x = 0; x <= 32; x++) {
+        Pixel current_pixel = skel5.GetPixel(32 - x, y);
+        if (current_pixel.a > 0.1) {
+          screenBuffer.PutPixel(xSkel + x, i * 32 + y, skel5.GetPixel(32 - x, y));
+        }
+      }
+    }
+    usleep(100000);
+    glfwPollEvents();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); GL_CHECK_ERRORS;
+    glDrawPixels (WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, screenBuffer.Data()); GL_CHECK_ERRORS;
+    glfwSwapBuffers(window);
+    xSkel -= 32;
+  }
+}
+
+int level1(Image &screenBuffer, GLFWwindow *window, Player player) {
 
   unsigned char text[1600];
 
@@ -1174,7 +1353,7 @@ void level1(Image &screenBuffer, GLFWwindow *window, Player player) {
               continue;
           }
           if (labirint[i][j] == '@') {
-            cout << deltaTime << endl;
+            //cout << deltaTime << endl;
             shimmering(screenBuffer, window, pent1, i, j);
             if (deltaTime > 0.02) {
               shimmering(screenBuffer, window, pent2, i, j);
@@ -1246,9 +1425,12 @@ void level1(Image &screenBuffer, GLFWwindow *window, Player player) {
         }
     }
     if (((int)(float(player.coords.x) / 32)) == xOfExit && ((int)(float(player.coords.y) / 32)) == yOfExit) {
-      nextLevelWindow(screenBuffer, window, player);
+      if (nextLevelWindow(screenBuffer, window, player) == 1) {
+        return 1;
+      }
     }
     glfwPollEvents();
+
     loadTorch(window, screenBuffer, 33, 79, player);
     loadTorch(window, screenBuffer, 34, 80, player);
     loadTorch(window, screenBuffer, 33, 78, player);
@@ -1263,6 +1445,9 @@ void level1(Image &screenBuffer, GLFWwindow *window, Player player) {
     loadTorch(window, screenBuffer, 19, 25, player);
     loadTorch(window, screenBuffer, 15, 144, player);
     loadTorch(window, screenBuffer, 15, 140, player);
+
+    loadSkeletonWait(window, screenBuffer, 15, 70, player);
+    //loadSkeletonWalk(window, screenBuffer, 33, 79, player);
     if (deltaTime < 0.23) {
       processPlayerMovement(player, screenBuffer, window, labirint);
     }
@@ -1290,7 +1475,8 @@ void level1(Image &screenBuffer, GLFWwindow *window, Player player) {
       int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
       if (state == GLFW_PRESS)
       {
-        shootingLeft(screenBuffer, window, player);
+        shootingLeft(screenBuffer, window, player, labirint);
+
       }
       state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
       if (state == GLFW_PRESS)

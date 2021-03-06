@@ -57,8 +57,6 @@ fstream
 -
 unistd.h
 -
-SFML/Graphics.hpp
--
 GLFW/glfw3.h
 -
 
