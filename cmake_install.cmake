@@ -1,4 +1,4 @@
-# Install script for directory: /home/ghost/game1/msu_cmc_cg_2021/template1_cpp
+# Install script for directory: /home/ghost17/Downloads/318_Selevenko_A2 (1)/template1_cpp
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/ghost/game1/msu_cmc_cg_2021/template1_cpp/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/ghost17/Downloads/318_Selevenko_A2 (1)/template1_cpp/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
